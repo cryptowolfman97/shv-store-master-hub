@@ -23,6 +23,8 @@ android.ndk_api = 21
 android.archs = arm64-v8a, armeabi-v7a
 android.accept_sdk_license = True
 android.enable_androidx = True
+android.gradle_dependencies = androidx.core:core:1.9.0
+android.add_providers = androidx.core.content.FileProvider:fileprovider:res/xml/file_paths.xml
 android.allow_backup = True
 
 [buildozer]
