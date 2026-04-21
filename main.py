@@ -5,8 +5,17 @@ Version: 1.0.0
 """
 import os, json, threading, urllib.request, urllib.parse, urllib.error, io, base64
 from datetime import datetime
+import ssl
+
+# --- ANDROID SSL VERIFICATION FIX ---
+try:
+    ssl._create_default_https_context = ssl._create_unverified_context
+except AttributeError:
+    pass
+# ------------------------------------
 
 from kivy.app import App
+# ... the rest of your kivy imports continue normally ...
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.floatlayout import FloatLayout
