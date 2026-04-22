@@ -33,6 +33,16 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y git zip unzip autoconf libtool pkg-config
 
+      - name: Create FileProvider paths XML
+        run: |
+          mkdir -p res/xml
+          cat > res/xml/file_paths.xml << 'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <paths>
+              <cache-path name="apk_cache" path="." />
+          </paths>
+          EOF
+
       - name: Cache Buildozer
         uses: actions/cache@v4
         with:
