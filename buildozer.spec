@@ -15,7 +15,7 @@ fullscreen = 0
 
 android.permissions = INTERNET, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE, REQUEST_INSTALL_PACKAGES, MANAGE_EXTERNAL_STORAGE
 android.gradle_dependencies = androidx.core:core:1.9.0
-android.add_provider = androidx.core.content.FileProvider:com.shvertex.shvmasterhub.fileprovider:False:res/xml/file_paths.xml
+android.manifest = AndroidManifest.tmpl.xml
 android.api = 33
 android.minapi = 21
 android.ndk_api = 21
