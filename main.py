@@ -42,7 +42,7 @@ from kivy.storage.jsonstore import JsonStore
 SUPABASE_URL = "https://ovdxetyadfsxehwnbyuz.supabase.co"
 SUPABASE_ANON_KEY = "sb_publishable_3J-H60daCgWdhSvpdXi0zw_QpPax3Dz"
 APP_VERSION = "1.0.0"
-FONT_PATH = "/storage/emulated/0/Download/emoji.ttf"
+FONT_PATH = "emoji.ttf"
 
 # ─────────────────────────────────────────────
 #  THEME
