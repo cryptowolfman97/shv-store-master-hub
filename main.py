@@ -88,7 +88,7 @@ C_DIVIDER   = get_color_from_hex("#1F1F1F")
 C_NAV       = get_color_from_hex("#0A0A0A")
 
 # ─────────────────────────────────────────────
-#  MERGED SUPABASE CLIENT
+#  MERGED SUPABASE-CLIENT
 # ─────────────────────────────────────────────
 class SupabaseClient:
     def __init__(self, url, key):
