@@ -67,7 +67,7 @@ def _open_url_in_browser(url):
 SUPABASE_URL = "https://ovdxetyadfsxehwnbyuz.supabase.co"
 SUPABASE_ANON_KEY = "sb_publishable_3J-H60daCgWdhSvpdXi0zw_QpPax3Dz"
 APP_VERSION = "2.0.0"
-FONT_PATH = "emoji.ttf"
+FONT_PATH = "/storage/emulated/0/Download/emoji.ttf"
 
 # ─────────────────────────────────────────────
 #  THEME
@@ -2134,7 +2134,6 @@ class StoreInboxScreen(StoreScreenWithNav):
         if not self.read_store.exists(str(msg_id)):
             self.read_store.put(str(msg_id), read=True)
 
-
 class AppTile(BoxLayout):
     def __init__(self, item, on_tap, **kwargs):
         # Changed to horizontal and reduced height to 88dp for a sleek list view
@@ -2143,16 +2142,26 @@ class AppTile(BoxLayout):
         make_bg(self, C_CARD, radius=dp(12))
         
         # 1. Left: App Icon
-        self.add_widget(load_remote_image(item.get("icon_url") or "", fallback_text="📦", size_hint_x=None, width=dp(64), height=dp(64)))
+        icon = load_remote_image(item.get("icon_url") or "", fallback_text="📦", size_hint_x=None, width=dp(64), height=dp(64))
+        icon.pos_hint = {'center_y': 0.5} # Added to guarantee perfect vertical centering
+        self.add_widget(icon)
         
         # 2. Middle: Title and Tagline Column
         text_col = BoxLayout(orientation="vertical", spacing=dp(2))
+        
+        # ---> FIX: Top spacer added to push text down to the middle <---
+        text_col.add_widget(Widget()) 
+        
         text_col.add_widget(SHVLabel(text=item.get("name", ""), font_size=sp(15), bold=True, size_hint_y=None, height=dp(22)))
         
         tagline_lbl = Label(text=item.get("tagline", ""), font_size=sp(11), color=C_TEXT_SEC, size_hint_y=None, halign="left", valign="top")
         tagline_lbl.bind(width=lambda w, val: setattr(w, 'text_size', (val, None)))
         tagline_lbl.bind(texture_size=lambda w, s: setattr(w, "height", min(s[1], dp(34)))) # Caps height so long text doesn't stretch the card
         text_col.add_widget(tagline_lbl)
+        
+        # ---> FIX: Bottom spacer added to push text up to the middle <---
+        text_col.add_widget(Widget()) 
+        
         self.add_widget(text_col)
         
         # 3. Right: Version Number
@@ -2168,6 +2177,8 @@ class AppTile(BoxLayout):
     def _touch(self, widget, touch):
         if self.collide_point(*touch.pos): 
             self._on_tap(self._item)
+
+
 
 
 class StoreCatalogScreen(StoreScreenWithNav):
@@ -2367,6 +2378,94 @@ class AccountScreen(StoreScreenWithNav):
 # ─────────────────────────────────────────────
 #  THE MAIN HUB SCREEN
 # ─────────────────────────────────────────────
+class AdminPinModal:
+    """An onscreen numpad overlay for admin verification."""
+    @classmethod
+    def show(cls, on_success):
+        from kivy.uix.modalview import ModalView
+        from kivy.uix.gridlayout import GridLayout
+        
+        view = ModalView(size_hint=(0.85, None), height=dp(420), background_color=(0,0,0,0.8))
+        box = BoxLayout(orientation="vertical", padding=dp(20), spacing=dp(12))
+        make_bg(box, C_CARD, radius=dp(16))
+
+        title = Label(text="Admin Verification", font_size=sp(18), bold=True, color=C_TEXT, size_hint_y=None, height=dp(24))
+        box.add_widget(title)
+
+        pin_label = Label(text="Enter PIN", font_size=sp(20), color=C_TEXT_SEC, size_hint_y=None, height=dp(40))
+        box.add_widget(pin_label)
+
+        grid = GridLayout(cols=3, spacing=dp(10), size_hint_y=None)
+        grid.bind(minimum_height=grid.setter("height"))
+
+        entered_pin = []
+
+        def update_label():
+            if not entered_pin:
+                pin_label.text = "Enter PIN"
+                pin_label.color = C_TEXT_SEC
+            else:
+                pin_label.text = "• " * len(entered_pin)
+                pin_label.color = get_color_from_hex("#388E3C")
+
+        def check_pin():
+            if "".join(entered_pin) == "20699":
+                pin_label.text = "Access Granted"
+                pin_label.color = get_color_from_hex("#4CAF50")
+                Clock.schedule_once(lambda _: view.dismiss(), 0.5)
+                Clock.schedule_once(lambda _: on_success(), 0.6)
+            else:
+                pin_label.text = "Incorrect PIN"
+                pin_label.color = C_ROSE
+                entered_pin.clear()
+                Clock.schedule_once(lambda _: restore_label(), 1.5)
+
+        def restore_label():
+            pin_label.color = C_TEXT_SEC
+            update_label()
+
+        def btn_press(btn):
+            # Block input if currently showing an error or success message
+            if pin_label.text in ["Incorrect PIN", "Access Granted"]:
+                return
+            
+            val = btn.text
+            if val == "C":
+                entered_pin.clear()
+            elif val == "<":
+                if entered_pin: entered_pin.pop()
+            else:
+                if len(entered_pin) < 5:
+                    entered_pin.append(val)
+            update_label()
+            
+            if len(entered_pin) == 5:
+                check_pin()
+
+        keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "C", "0", "<"]
+        for char in keys:
+            b = SHVButton(text=char, primary=False, height=dp(56))
+            if char in ["C", "<"]:
+                b.color = C_ROSE
+            b.bind(on_release=btn_press)
+            grid.add_widget(b)
+
+        box.add_widget(grid)
+        
+        close_btn = SHVButton(text="Cancel", primary=False, height=dp(44))
+        close_btn.bind(on_release=lambda _: view.dismiss())
+        box.add_widget(close_btn)
+
+        view.add_widget(box)
+        view.open()
+
+
+# ─────────────────────────────────────────────
+#  THE MAIN HUB SCREEN
+# ─────────────────────────────────────────────
+# ─────────────────────────────────────────────
+#  THE MAIN HUB SCREEN
+# ─────────────────────────────────────────────
 class HubScreen(Screen):
     def on_enter(self):
         self.clear_widgets()
@@ -2376,32 +2475,74 @@ class HubScreen(Screen):
         box = BoxLayout(
             orientation="vertical", 
             size_hint=(0.8, None), 
-            height=dp(340), 
+            height=dp(360), 
             spacing=dp(20), 
             pos_hint={"center_x": 0.5, "center_y": 0.5}
         )
 
         # Branding
         brand = BoxLayout(orientation="vertical", size_hint_y=None, height=dp(80))
-        brand.add_widget(Label(text="SHV", font_size=sp(48), bold=True, color=C_TEAL))
+        brand.add_widget(Label(text="SHV", font_size=sp(48), bold=True, color=get_color_from_hex("#388E3C")))
         brand.add_widget(Label(text="MASTER HUB", font_size=sp(12), color=C_TEXT_SEC))
         box.add_widget(brand)
         box.add_widget(spacer(20))
 
-        # Admin App Button
-        btn_admin = SHVButton(text="SH Vertex Admin", primary=True)
-        btn_admin.bind(on_release=lambda _: setattr(self.manager, "current", "admin_login"))
-        box.add_widget(btn_admin)
-
-        # Store App Button
-        btn_store = SHVButton(text="SH Vertex Customer", primary=True)
+        # 1. Store App Button (Moved to Top, Lighter Green, Two-row text, ALL CAPS, BOLD, LARGER)
+        btn_store = SHVButton(
+            text="SH VERTEX\nSTORE", 
+            primary=True, 
+            height=dp(64), 
+            font_size=sp(18), 
+            bold=True
+        )
+        btn_store.halign = "center" 
+        
+        # Override default background color dynamically
+        btn_store.canvas.before.clear()
+        with btn_store.canvas.before:
+            Color(*get_color_from_hex("#388E3C"))  # Lighter Green
+            btn_store._rect = RoundedRectangle(pos=btn_store.pos, size=btn_store.size, radius=[dp(10)])
+            
+        def _upd_store(*_):
+            btn_store._rect.pos  = btn_store.pos
+            btn_store._rect.size = btn_store.size
+            
+        btn_store.bind(pos=_upd_store, size=_upd_store)
         btn_store.bind(on_release=lambda _: setattr(self.manager, "current", "store_login"))
         box.add_widget(btn_store)
+
+
+        # 2. Admin App Button (Moved to Bottom, Dark Green, Halved width, Centered)
+        btn_admin = SHVButton(
+            text="Admin", 
+            primary=True, 
+            height=dp(56), 
+            size_hint_x=0.5, 
+            pos_hint={"center_x": 0.5}
+        )
+        
+        # Override default background color dynamically
+        btn_admin.canvas.before.clear()
+        with btn_admin.canvas.before:
+            Color(*get_color_from_hex("#1B5E20"))  # Dark Green
+            btn_admin._rect = RoundedRectangle(pos=btn_admin.pos, size=btn_admin.size, radius=[dp(10)])
+            
+        def _upd_admin(*_):
+            btn_admin._rect.pos  = btn_admin.pos
+            btn_admin._rect.size = btn_admin.size
+            
+        btn_admin.bind(pos=_upd_admin, size=_upd_admin)
+        
+        # Trigger PIN modal instead of direct navigation
+        def _ask_admin_pin(*_):
+            AdminPinModal.show(on_success=lambda: setattr(self.manager, "current", "admin_login"))
+            
+        btn_admin.bind(on_release=_ask_admin_pin)
+        box.add_widget(btn_admin)
 
         box.add_widget(spacer(20))
 
         # --- THE FIXED EXIT BUTTON ---
-        # Using BBCode markup to force the emoji font only on the icon
         btn_exit = SHVButton(
             text=f"[font={FONT_PATH}]🚪[/font] Exit Hub", 
             primary=False,
@@ -2411,7 +2552,6 @@ class HubScreen(Screen):
         btn_exit.color = C_ROSE
         btn_exit.bind(on_release=lambda _: App.get_running_app().show_exit_confirm())
         
-        # Redraw the button red background
         btn_exit.canvas.before.clear()
         with btn_exit.canvas.before:
             Color(*C_ROSE)
@@ -2427,7 +2567,6 @@ class HubScreen(Screen):
         box.add_widget(btn_exit)
         root.add_widget(box)
         self.add_widget(root)
-
 
 # ─────────────────────────────────────────────
 #  MASTER APP RUNNER
