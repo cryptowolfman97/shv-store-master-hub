@@ -1,7 +1,7 @@
 """
 SH Vertex Master Hub
 Includes: SHV Admin Panel & SHV Customer Store
-Version: 2.0.0
+Version: 2.1.0
 """
 import os, json, threading, urllib.request, urllib.parse, urllib.error, io, base64
 from datetime import datetime
@@ -66,8 +66,8 @@ def _open_url_in_browser(url):
 # ─────────────────────────────────────────────
 SUPABASE_URL = "https://ovdxetyadfsxehwnbyuz.supabase.co"
 SUPABASE_ANON_KEY = "sb_publishable_3J-H60daCgWdhSvpdXi0zw_QpPax3Dz"
-APP_VERSION = "2.0.0"
-FONT_PATH = "/storage/emulated/0/Download/emoji.ttf"
+APP_VERSION = "2.1.0"
+FONT_PATH = "emoji.ttf"
 
 # ─────────────────────────────────────────────
 #  THEME
