@@ -11,6 +11,8 @@ version = 2.1
 requirements = python3,kivy,openssl,pyjnius
 
 orientation = portrait
+icon.adaptive_foreground.filename = foreground.png
+icon.adaptive_background.filename = background.png
 fullscreen = 0
 
 android.permissions = INTERNET, WRITE_EXTERNAL_STORAGE, READ_EXTERNAL_STORAGE, REQUEST_INSTALL_PACKAGES, MANAGE_EXTERNAL_STORAGE
